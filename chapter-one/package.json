@@ -1,0 +1,15 @@
+{
+  "name": "chapter-one",
+  "version": "1.0.0",
+  "description": "戏剧团的账单",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest"
+  },
+  "keywords": [],
+  "author": "LQS",
+  "license": "ISC",
+  "devDependencies": {
+    "vitest": "^0.12.6"
+  }
+}
