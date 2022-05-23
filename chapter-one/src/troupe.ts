@@ -1,5 +1,12 @@
+import { removeItems } from ".pnpm/registry.npmmirror.com+@pixi+utils@6.3.2_cb3fd473ba582823f2dfd3d53c57a4ca/node_modules/@pixi/utils";
 import { playsMap } from "./playMap";
 import { priceMap } from "./priceMap";
+
+const format = new Intl.NumberFormat("en-us", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 2,
+}).format;
 export class Troupe {
   plays() {
     const temp = playsMap;
@@ -23,47 +30,81 @@ export class Troupe {
   }
 
   statement(customer, performances) {
-    let result = `Statement for ${customer}\n`;
-    const format = new Intl.NumberFormat("en-us", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-    }).format;
-    let totalPrice = 0;
-    let volumeCredits = 0;
+    let result = {
+      customer,
+      performances: [],
+      totalPrice: 0,
+      volumeCredits: 0,
+    };
+
     for (const item of performances) {
       const play = playsMap[item.play].name;
-      let amount = 0;
-      if (item.type === "tragedy") {
-        if (item.audienceAount > 30) {
-          amount += item.price + 1000 * (item.audienceAount - 30);
-        }
-      } else if (item.type === "comedy") {
-        if (item.audienceAount > 20) {
-          amount += item.price + 10000 + 500 * (item.audienceAount - 20);
-        }
-        amount += 300 * item.audienceAount;
-      } else {
-        throw new Error(`unknow type: ${item.type}`);
-      }
-      volumeCredits += Math.max(item.audienceAount - 30, 0);
-      if (item.type === "comedy") {
-        volumeCredits += Math.floor(item.audienceAount / 5);
-      }
-      totalPrice += amount;
-
-      result += `${play}: ${format(amount / 100)} (${item.audienceAount} seats)\n`;
+      const tmp = {
+        play,
+        money: Troupe.amountFor(item),
+        seats: item.audienceAount,
+      };
+      result.performances.push(tmp);
+      result.totalPrice += tmp.money;
+      result.volumeCredits += Troupe.volumeCreditsFor(item);
     }
-    result += `Amount owed is ${format(totalPrice / 100)}\n`;
-    result += `You earned ${volumeCredits} credits`;
+    return Troupe.printString(result);
+  }
+
+  /**
+   * 每出剧的观众量积分
+   * 制定观众量积分的规格
+   * @param performance
+   * @returns
+   */
+  static volumeCreditsFor(performance) {
+    let volumeCredits = Math.max(performance.audienceAount - 30, 0);
+    if (performance.type === "comedy") {
+      volumeCredits += Math.floor(performance.audienceAount / 5);
+    }
+    return volumeCredits;
+  }
+
+  /**
+   * 剧目金额
+   * 制定定价规格
+   * @param performance
+   * @returns amount
+   */
+  static amountFor(performance) {
+    let amount = 0;
+    if (performance.type === "tragedy") {
+      if (performance.audienceAount > 30) {
+        amount += performance.price + 1000 * (performance.audienceAount - 30);
+      }
+    } else if (performance.type === "comedy") {
+      if (performance.audienceAount > 20) {
+        amount += performance.price + 10000 + 500 * (performance.audienceAount - 20);
+      }
+      amount += 300 * performance.audienceAount;
+    } else {
+      throw new Error(`unknow type: ${performance.type}`);
+    }
+    return amount;
+  }
+
+  /**
+   * 输出账单详情 字符串格式
+   * @param billingDetail
+   * @returns {String}
+   */
+  static printString(billingDetail) {
+    let result = `Statement for ${billingDetail.customer}\n`;
+
+    // performances: [ { play: xxx, money： $xxx.00, seats: xx }, { ... }, {...}]
+    billingDetail.performances.forEach((item) => {
+      result += `${item.play}: ${format(item.money / 100)} (${item.seats} seats)\n`;
+    });
+
+    // totalPrice: xxx, volumeCredits: xx
+    result += `Amount owed is ${format(billingDetail.totalPrice / 100)}\nYou earned ${
+      billingDetail.volumeCredits
+    } credits`;
     return result;
-    //   return `
-    //   Statement for ${customer}
-    //       Hamelet: $650.00 (55 seats)
-    //       As You Like It: $580.00 (35 seats)
-    //       Othello: $500.00 (40 seats)
-    //   Amount owed is $1,730.00
-    //   You earned 47 credits
-    // `;
   }
 }
