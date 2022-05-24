@@ -1,11 +1,13 @@
 import { playsMap } from "./playMap";
 import { priceMap } from "./priceMap";
 
-const format = new Intl.NumberFormat("en-us", {
-  style: "currency",
-  currency: "USD",
-  minimumFractionDigits: 2,
-}).format;
+function usd(number) {
+  return new Intl.NumberFormat("en-us", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+  }).format(number / 100);
+}
 export class Troupe {
   plays() {
     const temp = playsMap;
@@ -28,26 +30,47 @@ export class Troupe {
     };
   }
 
-  statement(customer, performances) {
+  statement(invoice) {
+    return Troupe.renderPlainText(Troupe.createStatementData(invoice));
+  }
+
+  static createStatementData(invoice) {
     let result = {
-      customer,
+      customer: invoice.customer,
       performances: [],
       totalPrice: 0,
       volumeCredits: 0,
     };
+    result.performances = Troupe.performances(invoice.plays);
+    result.totalPrice = Troupe.totalPrice(invoice.plays);
+    result.volumeCredits = Troupe.totalVolumeCredits(invoice.plays);
+    return result;
+  }
 
-    for (const item of performances) {
-      const play = playsMap[item.play].name;
-      const tmp = {
-        play,
+  static performances(plays) {
+    return plays.map((item) => {
+      return {
+        play: playsMap[item.play].name,
         money: Troupe.amountFor(item),
         seats: item.audienceAount,
       };
-      result.performances.push(tmp);
-      result.totalPrice += tmp.money;
-      result.volumeCredits += Troupe.volumeCreditsFor(item);
+    });
+  }
+
+  static totalPrice(performances) {
+    let result = 0;
+    for (const item of performances) {
+      result += Troupe.amountFor(item);
     }
-    return Troupe.printString(result);
+    return result;
+  }
+
+  static totalVolumeCredits(performances) {
+    let result = 0;
+    for (const item of performances) {
+      result += Troupe.volumeCreditsFor(item);
+    }
+    return result;
   }
 
   /**
@@ -92,18 +115,19 @@ export class Troupe {
    * @param billingDetail
    * @returns {String}
    */
-  static printString(billingDetail) {
+  static renderPlainText(billingDetail) {
     let result = `Statement for ${billingDetail.customer}\n`;
 
     // performances: [ { play: xxx, money： $xxx.00, seats: xx }, { ... }, {...}]
     billingDetail.performances.forEach((item) => {
-      result += `${item.play}: ${format(item.money / 100)} (${item.seats} seats)\n`;
+      result += `${item.play}: ${usd(item.money)} (${item.seats} seats)\n`;
     });
 
     // totalPrice: xxx, volumeCredits: xx
-    result += `Amount owed is ${format(billingDetail.totalPrice / 100)}\nYou earned ${
-      billingDetail.volumeCredits
-    } credits`;
+    result += `Amount owed is ${usd(billingDetail.totalPrice)}\nYou earned ${billingDetail.volumeCredits} credits`;
     return result;
   }
+
+  // 新需求1 输出的账单打印成html格式
+  static renderHtml(billingDetail) {}
 }

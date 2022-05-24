@@ -42,28 +42,59 @@ test("看了剧之后，选出自己想看的剧以及预订的观众数，进�
 
 test("生产订单", () => {
   const troupe = new Troupe();
-  const customer = "Job";
-  const performances = [
-    {
-      play: "hamelet",
-      type: "tragedy",
-      audienceAount: 55,
-      price: 40000,
-    },
-    {
-      play: "asLike",
-      audienceAount: 35,
-      type: "comedy",
-      price: 30000,
-    },
-    {
-      play: "othello",
-      audienceAount: 40,
-      type: "tragedy",
-      price: 40000,
-    },
-  ];
-  expect(troupe.statement(customer, performances)).toEqual(
-    `Statement for ${customer}\nHamelet: $650.00 (55 seats)\nAs You Like It: $580.00 (35 seats)\nOthello: $500.00 (40 seats)\nAmount owed is $1,730.00\nYou earned 47 credits`
+  const invoice = {
+    customer: "Job",
+    plays: [
+      {
+        play: "hamelet",
+        type: "tragedy",
+        audienceAount: 55,
+        price: 40000,
+      },
+      {
+        play: "asLike",
+        audienceAount: 35,
+        type: "comedy",
+        price: 30000,
+      },
+      {
+        play: "othello",
+        audienceAount: 40,
+        type: "tragedy",
+        price: 40000,
+      },
+    ],
+  };
+  expect(troupe.statement(invoice)).toEqual(
+    `Statement for ${invoice.customer}\nHamelet: $650.00 (55 seats)\nAs You Like It: $580.00 (35 seats)\nOthello: $500.00 (40 seats)\nAmount owed is $1,730.00\nYou earned 47 credits`
   );
+});
+
+test("生产订单并且以HTML格式", () => {
+  const troupe = new Troupe();
+  const invoice = {
+    customer: "Job",
+    plays: [
+      {
+        play: "hamelet",
+        type: "tragedy",
+        audienceAount: 55,
+        price: 40000,
+      },
+      {
+        play: "asLike",
+        audienceAount: 35,
+        type: "comedy",
+        price: 30000,
+      },
+      {
+        play: "othello",
+        audienceAount: 40,
+        type: "tragedy",
+        price: 40000,
+      },
+    ],
+  };
+
+  // expect(troupe.statement(invoice))
 });
