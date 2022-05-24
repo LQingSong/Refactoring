@@ -1,4 +1,3 @@
-import { removeItems } from ".pnpm/registry.npmmirror.com+@pixi+utils@6.3.2_cb3fd473ba582823f2dfd3d53c57a4ca/node_modules/@pixi/utils";
 import { playsMap } from "./playMap";
 import { priceMap } from "./priceMap";
 
@@ -58,11 +57,11 @@ export class Troupe {
    * @returns
    */
   static volumeCreditsFor(performance) {
-    let volumeCredits = Math.max(performance.audienceAount - 30, 0);
+    let result = Math.max(performance.audienceAount - 30, 0);
     if (performance.type === "comedy") {
-      volumeCredits += Math.floor(performance.audienceAount / 5);
+      result += Math.floor(performance.audienceAount / 5);
     }
-    return volumeCredits;
+    return result;
   }
 
   /**
@@ -72,20 +71,20 @@ export class Troupe {
    * @returns amount
    */
   static amountFor(performance) {
-    let amount = 0;
+    let result = 0;
     if (performance.type === "tragedy") {
       if (performance.audienceAount > 30) {
-        amount += performance.price + 1000 * (performance.audienceAount - 30);
+        result += performance.price + 1000 * (performance.audienceAount - 30);
       }
     } else if (performance.type === "comedy") {
       if (performance.audienceAount > 20) {
-        amount += performance.price + 10000 + 500 * (performance.audienceAount - 20);
+        result += performance.price + 10000 + 500 * (performance.audienceAount - 20);
       }
-      amount += 300 * performance.audienceAount;
+      result += 300 * performance.audienceAount;
     } else {
       throw new Error(`unknow type: ${performance.type}`);
     }
-    return amount;
+    return result;
   }
 
   /**
